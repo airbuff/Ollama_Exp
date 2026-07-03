@@ -17,6 +17,11 @@ The notebook walks through the process of:
 * Llama 3.2 model downloaded
 * Jupyter Notebook or Jupyter Lab
 
+## Full Tutorial 
+Youtube 
+https://youtu.be/RrGf6gtkSqE
+
+
 ## Installation
 
 ### 1. Install Ollama
