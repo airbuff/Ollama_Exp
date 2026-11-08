@@ -9,10 +9,6 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: update-ollama-version
-  cancel-in-progress: false
-
 jobs:
   update-version:
     runs-on: ubuntu-latest
@@ -25,26 +21,19 @@ jobs:
           persist-credentials: true
 
       - name: Fetch Latest Ollama Version
-        id: ollama
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          LATEST_TAG=$(curl -fsSL \
-            --retry 3 \
+          LATEST_TAG=$(curl -fsSL --retry 3 \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/ollama/ollama/releases/latest \
             | jq -er '.tag_name')
 
-          if [[ ! "$LATEST_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-            echo "Invalid version: $LATEST_TAG"
-            exit 1
-          fi
-
           echo "VERSION=$LATEST_TAG" >> "$GITHUB_ENV"
-          echo "Latest Ollama release: $LATEST_TAG"
+          echo "Latest Ollama version: $LATEST_TAG"
 
-      - name: Update README
+      - name: Update README.md
         run: |
           python - <<'PY'
           import os
@@ -54,32 +43,24 @@ jobs:
           version = os.environ["VERSION"]
           readme = Path("README.md")
 
-          content = (
-              readme.read_text(encoding="utf-8")
-              if readme.exists()
-              else "# Project\n"
-          )
+          content = readme.read_text(encoding="utf-8")
 
-          new_line = f"- Ollama {version}+ installed"
-
+          updated = f"- Ollama {version}+ installed"
           pattern = r"(?m)^- Ollama v[^\r\n]*$"
 
           if re.search(pattern, content):
               content = re.sub(
                   pattern,
-                  lambda _: new_line,
+                  lambda _: updated,
                   content
               )
           else:
-              content = content.rstrip() + "\n\n" + new_line + "\n"
+              content = content.rstrip() + "\n\n" + updated + "\n"
 
-          readme.write_text(
-              content,
-              encoding="utf-8"
-          )
+          readme.write_text(content, encoding="utf-8")
           PY
 
-      - name: Commit and Push
+      - name: Commit and Push Changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email \
