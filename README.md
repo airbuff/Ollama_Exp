@@ -13,7 +13,7 @@ The notebook walks through the process of:
 ## Prerequisites
 
 * Python 3.10+
-- Ollama v0.40.17+ installed
+- Ollama v0.40.18+ installed
 * Llama 3.2 model downloaded
 * Jupyter Notebook or Jupyter Lab
 
